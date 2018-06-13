@@ -1,6 +1,21 @@
 --  [[ Champion ]]
 if GetObjectName( GetMyHero()) ~= "Ezreal" then return end
 
+-- [[ Update ]]
+local ver = "0.1"
+
+function AutoUpdate(data)
+    if tonumber(data) > tonumber(ver) then
+        PrintChat("New version found! " .. data)
+        PrintChat("Downloading update, please wait...")
+        DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("Update Complete, please 2x F6!") return end)
+    else
+        PrintChat("No updates found!")
+    end
+end
+
+GetWebResultAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.version", AutoUpdate)
+
 -- [[ Lib ]]
 require ("OpenPredict")
 require ("DamageLib")
