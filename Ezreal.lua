@@ -1,6 +1,21 @@
 --  [[ Champion ]]
 if GetObjectName( GetMyHero()) ~= "Ezreal" then return end
 
+-- [[ Update ]]
+local ver = "1.1"
+
+function AutoUpdate(data)
+    if tonumber(data) > tonumber(ver) then
+        PrintChat("New version found! " .. data)
+        PrintChat("Downloading update, please wait...")
+        DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("Update Complete, please 2x F6!") return end)
+    else
+        PrintChat("No updates found!")
+    end
+end
+
+GetWebResultAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.version", AutoUpdate)
+
 -- [[ Lib ]]
 require ("OpenPredict")
 require ("DamageLib")
@@ -12,7 +27,7 @@ EzrealScriptPrint("Made by EwEwe")
 
 
 -- [[ Menu ]]
-local EzrealMenu = Menu("Ezreal", "Ezreal God Challenger")
+local EzrealMenu = Menu("Ezreal", "Simple Ezreal")
 -- [[ Combo ]]
 EzrealMenu:SubMenu("Combo", "[Ezreal] Combo Settings")
 EzrealMenu.Combo:Boolean("Q", "Use Q", true)
@@ -191,68 +206,7 @@ function KS()
 			end
 		end
 	end
--- [[ HP bar ]]
-local function Ezreal_GetHPBarPos(enemy)
-  local barPos = GetHPBarPos(enemy) 
-  local BarPosOffsetX = -50
-  local BarPosOffsetY = 46
-  local CorrectionY = 39
-  local StartHpPos = 31 
-  local StartPos = Vector(barPos.x , barPos.y, 0)
-  local EndPos = Vector(barPos.x + 108 , barPos.y , 0)    
-  return Vector(StartPos.x, StartPos.y, 0), Vector(EndPos.x, EndPos.y, 0)
-end
-
-local function Ezreal_DrawLineHPBar(damage, text, unit, team)
-  if unit.dead or not unit.visible then return end
-  local p = WorldToScreen(0, Vector(unit.x, unit.y, unit.z))
-  local thedmg = 0
-  local line = 2
-  local linePosA  = { x = 0, y = 0 }
-  local linePosB  = { x = 0, y = 0 }
-  local TextPos   = { x = 0, y = 0 }
-
-  if damage >= unit.health then
-    thedmg = unit.health - 1
-    text = "KILLABLE!"
-  else
-    thedmg = damage
-    text = "Possible Damage"
-  end
-
-  thedmg = math.round(thedmg)
-
-  local StartPos, EndPos = Ezreal_GetHPBarPos(unit)
-  local Real_X = StartPos.x + 24
-  local Offs_X = (Real_X + ((unit.health - thedmg) / unit.maxHealth) * (EndPos.x - StartPos.x - 2))
-  if Offs_X < Real_X then Offs_X = Real_X end 
-  local mytrans = 350 - math.round(255*((unit.health-thedmg)/unit.maxHealth))
-  if mytrans >= 255 then mytrans=254 end
-  local my_bluepart = math.round(400*((unit.health-thedmg)/unit.maxHealth))
-  if my_bluepart >= 255 then my_bluepart=254 end
-
-  if team then
-    linePosA.x = Offs_X - 24
-    linePosA.y = (StartPos.y-(30+(line*15)))    
-    linePosB.x = Offs_X - 24 
-    linePosB.y = (StartPos.y+10)
-    TextPos.x = Offs_X - 20
-    TextPos.y = (StartPos.y-(30+(line*15)))
-  else
-    linePosA.x = Offs_X-125
-    linePosA.y = (StartPos.y-(30+(line*15)))    
-    linePosB.x = Offs_X-125
-    linePosB.y = (StartPos.y-15)
-
-
-    TextPos.x = Offs_X-122
-    TextPos.y = (StartPos.y-(30+(line*15)))
-  end
-
-  DrawLine(linePosA.x, linePosA.y, linePosB.x, linePosB.y , 2, ARGB(mytrans, 255, my_bluepart, 0))
-  DrawText(tostring(thedmg).." "..tostring(text), 15, TextPos.x, TextPos.y , ARGB(mytrans, 255, my_bluepart, 0))
-end
-
+	
 -- [[ Drawings ]]
 OnDraw(function(myHero)
 	if myHero.dead or EzrealMenu.Draw.Disable:Value() then return end   
