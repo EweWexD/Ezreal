@@ -1,28 +1,46 @@
+--╔═══╗╔══╗╔═╗╔═╗╔═══╗╔╗   ╔═══╗     ╔═══╗╔════╗╔═══╗╔═══╗╔═══╗╔╗
+--║╔═╗║╚╣─╝║║╚╝║║║╔═╗║║║   ║╔══╝     ║╔══╝╚══╗═║║╔═╗║║╔══╝║╔═╗║║║
+--║╚══╗ ║║ ║╔╗╔╗║║╚═╝║║║   ║╚══╗     ║╚══╗  ╔╝╔╝║╚═╝║║╚══╗║║ ║║║║  
+--╚══╗║ ║║ ║║║║║║║╔══╝║║ ╔╗║╔══╝     ║╔══╝ ╔╝╔╝ ║╔╗╔╝║╔══╝║╚═╝║║║ ╔╗
+--║╚═╝║╔╣─╗║║║║║║║║   ║╚═╝║║╚══╗     ║╚══╗╔╝═╚═╗║║║╚╗║╚══╗║╔═╗║║╚═╝║
+--╚═══╝╚══╝╚╝╚╝╚╝╚╝   ╚═══╝╚═══╝     ╚═══╝╚════╝╚╝╚═╝╚═══╝╚╝ ╚╝╚═══╝
+-- V1.01 Changelog
+-- +Q Error fix
+-- range color changes
+--
+-- V1 released to GoS
+
+
+
+
+
 --  [[ Champion ]]
 if GetObjectName( GetMyHero()) ~= "Ezreal" then return end
 
--- [[ Update ]]
-local ver = "1.1"
-
-function AutoUpdate(data)
-    if tonumber(data) > tonumber(ver) then
-        PrintChat("New version found! " .. data)
-        PrintChat("Downloading update, please wait...")
-        DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("Update Complete, please 2x F6!") return end)
-    else
-        PrintChat("No updates found!")
-    end
-end
-
-GetWebResultAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.version", AutoUpdate)
 
 -- [[ Lib ]]
 require ("OpenPredict")
 require ("DamageLib")
 function EzrealScriptPrint(msg)
 	print("<font color=\"#00ffff\">Ezreal Script:</font><font color=\"#ffffff\"> "..msg.."</font>")
+
 end
 EzrealScriptPrint("Made by EwEwe")
+
+-- [[ Update ]]
+--local version = "1.0"
+--function AutoUpdate(data)
+
+  --  if tonumber(data) > tonumber(verion) then
+   --     PrintChat("New version found! " .. data)
+   --     PrintChat("Downloading update, please wait...")
+    --    DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("Update Complete, please 2x F6!") return end)
+    --else
+    --    PrintChat("No updates found!")
+   -- end
+--end
+
+--GetWebResultAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.version", AutoUpdate)
 	
 
 
@@ -60,7 +78,7 @@ EzrealMenu.Draw:Boolean("Disable", "Disable All Drawings", false)
 
 -- [[ Spell details]]
 local Spells = {
-	Q = {range = 1150, delay = 0.25 , speed= 2000 , width = 60},
+	Q = {range = 1100, delay = 0.25 , speed= 2000 , width = 60},
 	W = {range = 1000, delay = 0.25 , speed= 1600 , width = 80},
 	E = {range = 475, delay = 0.25 , speed= 2000 , width = 80},
 	R = {range = 8000, delay = 1.0 , speed= 2000 , width = 160},
@@ -90,8 +108,8 @@ OnTick(function()
 		end)
 -- [[ Ezreal Q ]]
 function EzrealQ()
-	local QPred = GetPrediction(target, Spells.Q)
-	if QPred.hitChance > 0.4 then
+	local QPred = GetLinearAOEPrediction(target,Spells.Q)
+	if QPred.hitChance > 0.9 then
 		CastSkillShot(_Q, QPred.castPos)
 	end
 end
@@ -154,34 +172,21 @@ end
 -- [[ LaneClear ]]
 function Farm()
 	if Mode() == "LaneClear" then
-		if (myHero.mana/myHero.maxMana >= EzrealMenu.Farm.Mana:Value() /100) then
---			[[ Lane ]]
+		if EzrealMenu.Farm.Q:Value() then
 			for _, minion in pairs(minionManager.objects) do
 				if GetTeam(minion) == MINION_ENEMY then
---					[[ Use Q ]]
-					if EzrealMenu.Farm.Q:Value() and Ready(_Q) and ValidTarget(target, Spells.Q.range) then
-							CastSkillShot(_Q, minion)
+					if 100*GetCurrentMana(myHero)/GetMaxMana(myHero) > EzrealMenu.Farm.Mana:Value() then
+						if ValidTarget(minion, Spells.Q.range) then
+							if CanUseSpell(myHero,_Q) == READY then
+								CastSkillShot(_Q, GetOrigin(minion))
+							end
 						end
 					end
---					[[ Q For Last Hit]]
-					if EzrealMenu.Farm.Q:Value() and Ready(_Q) and ValidTarget(minion, Spells.Q.range) then
-						if GetCurrentHP(minion) < getdmg("Q", minion, myHero) then
-							CastSkillShot(_Q,minion)
-						end
-					end
-				end
---			[[ Jungle ]]
-			for _, mob in pairs(minionManager.objects) do
-				if GetTeam(mob) == MINION_JUNGLE then
---					[[ Use Q]]
-					if EzrealMenu.Farm.Q:Value() and Ready(_Q) and ValidTarget(target, Spells.Q.range) then
-							CastSkillShot(_Q, mob)
-						end
-					end	
 				end
 			end
 		end
 	end
+end
 -- [[ KillSteals ]]
 function KS()
 	for _, enemy in pairs(GetEnemyHeroes()) do
@@ -206,15 +211,15 @@ function KS()
 			end
 		end
 	end
-	
+
 -- [[ Drawings ]]
 OnDraw(function(myHero)
 	if myHero.dead or EzrealMenu.Draw.Disable:Value() then return end   
 	local pos = GetOrigin(myHero)
 --	[[ Draw Q ]]
-	if EzrealMenu.Draw.Q:Value() then DrawCircle(pos, Spells.Q.range, 0, 25, GoS.Red) end
+	if EzrealMenu.Draw.Q:Value() then DrawCircle(pos, Spells.Q.range, 1, 25, 0xFFC2C244) end
 --	[[ Draw W ]]
-	if EzrealMenu.Draw.W:Value() then DrawCircle(pos, Spells.W.range, 0, 25, GoS.Blue) end
+	if EzrealMenu.Draw.W:Value() then DrawCircle(pos, Spells.W.range, 1, 25, 0xFFFFFF00) end
 --	[[ Draw Q]]
-	if EzrealMenu.Draw.E:Value() then DrawCircle(pos, Spells.E.range, 0, 25, GoS.Green) end
+	if EzrealMenu.Draw.E:Value() then DrawCircle(pos, Spells.E.range, 0, 25, 0xFF56B107) end
 end)
