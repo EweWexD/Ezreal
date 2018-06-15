@@ -31,7 +31,7 @@ end
 EzrealScriptPrint("Made by EwEwe")
 
 -- [[ Update ]]
-local version = 1.02
+local version = "1.02"
 function AutoUpdate(data)
 
     if tonumber(data) > tonumber(version) then
