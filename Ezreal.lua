@@ -4,6 +4,9 @@
 --╚══╗║ ║║ ║║║║║║║╔══╝║║ ╔╗║╔══╝     ║╔══╝ ╔╝╔╝ ║╔╗╔╝║╔══╝║╚═╝║║║ ╔╗
 --║╚═╝║╔╣─╗║║║║║║║║   ║╚═╝║║╚══╗     ║╚══╗╔╝═╚═╗║║║╚╗║╚══╗║╔═╗║║╚═╝║
 --╚═══╝╚══╝╚╝╚╝╚╝╚╝   ╚═══╝╚═══╝     ╚═══╝╚════╝╚╝╚═╝╚═══╝╚╝ ╚╝╚═══╝
+-- V1.02 Changelog
+-- +Autoupdate added.
+--
 -- V1.01 Changelog
 -- +Q Error fix
 -- range color changes
@@ -28,19 +31,19 @@ end
 EzrealScriptPrint("Made by EwEwe")
 
 -- [[ Update ]]
---local version = "1.0"
---function AutoUpdate(data)
+local version = "1.0"
+function AutoUpdate(data)
 
-  --  if tonumber(data) > tonumber(verion) then
-   --     PrintChat("New version found! " .. data)
-   --     PrintChat("Downloading update, please wait...")
-    --    DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("Update Complete, please 2x F6!") return end)
-    --else
-    --    PrintChat("No updates found!")
-   -- end
---end
+    if tonumber(data) > tonumber(version) then
+        PrintChat("New version found! " .. data)
+        PrintChat("Downloading update, please wait...")
+        DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("Update Complete, please 2x F6!") return end)
+    else
+        PrintChat("No updates found!")
+    end
+end
 
---GetWebResultAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.version", AutoUpdate)
+GetWebResultAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.version", AutoUpdate)
 	
 
 
