@@ -35,11 +35,11 @@ local version = "1.02"
 function AutoUpdate(data)
 
     if tonumber(data) > tonumber(version) then
-        PrintChat("New version found! " .. data)
-        PrintChat("Downloading update, please wait...")
+        PrintChat("<font color='#00ffff'>New version found!"  .. data)
+        PrintChat("<font color='#00ffff'>Downloading update, please wait...")
         DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("Update Complete, please 2x F6!") return end)
     else
-        PrintChat("No updates found!")
+        PrintChat("<font color='#00ffff'>No updates found!")
     end
 end
 
@@ -81,7 +81,7 @@ EzrealMenu.Draw:Boolean("Disable", "Disable All Drawings", false)
 
 -- [[ Spell details]]
 local Spells = {
-	Q = {range = 1100, delay = 0.25 , speed= 2000 , width = 60},
+	Q = {range = 1150, delay = 0.25 , speed= 2000 , width = 60},
 	W = {range = 1000, delay = 0.25 , speed= 1600 , width = 80},
 	E = {range = 475, delay = 0.25 , speed= 2000 , width = 80},
 	R = {range = 8000, delay = 1.0 , speed= 2000 , width = 160},
