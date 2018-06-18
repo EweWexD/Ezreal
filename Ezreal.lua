@@ -4,12 +4,15 @@
 --╚══╗║ ║║ ║║║║║║║╔══╝║║ ╔╗║╔══╝     ║╔══╝ ╔╝╔╝ ║╔╗╔╝║╔══╝║╚═╝║║║ ╔╗
 --║╚═╝║╔╣─╗║║║║║║║║   ║╚═╝║║╚══╗     ║╚══╗╔╝═╚═╗║║║╚╗║╚══╗║╔═╗║║╚═╝║
 --╚═══╝╚══╝╚╝╚╝╚╝╚╝   ╚═══╝╚═══╝     ╚═══╝╚════╝╚╝╚═╝╚═══╝╚╝ ╚╝╚═══╝
+-- V1.03 Changelog
+-- +Autolevel R>Q>W>E on/off added
+--
 -- V1.02 Changelog
 -- +Autoupdate added.
 --
 -- V1.01 Changelog
 -- +Q Error fix
--- range color changes
+-- +range color changes
 --
 -- V1 released to GoS
 
@@ -31,7 +34,7 @@ end
 EzrealScriptPrint("Made by EwEwe")
 
 -- [[ Update ]]
-local version = "1.02"
+local version = "1.03"
 function AutoUpdate(data)
 
     if tonumber(data) > tonumber(version) then
@@ -72,12 +75,18 @@ EzrealMenu:SubMenu("KS", "[Ezreal] Kill Steal Settings")
 EzrealMenu.KS:Boolean("Q", "Use Q", true)
 EzrealMenu.KS:Boolean("W", "Use W", true)
 EzrealMenu.KS:Boolean("R", "Use R", true)
+-- [[ AutoLevel ]]
+EzrealMenu:SubMenu("AutoLevel", "[Ezreal] AutoLevel")
+EzrealMenu.AutoLevel:Boolean("DisableAUTOMAX", "Auto max habilitis R>Q>W>E?", false)
 -- [[Draw]]
 EzrealMenu:SubMenu("Draw", "[Ezreal] Drawing Settings")
 EzrealMenu.Draw:Boolean("Q", "Draw Q", false)
 EzrealMenu.Draw:Boolean("W", "Draw W", false)
 EzrealMenu.Draw:Boolean("E", "Draw E", false)
 EzrealMenu.Draw:Boolean("Disable", "Disable All Drawings", false)
+
+-- [[ AutoLevel ]]
+local levelsc =  { _Q, _W, _E, _Q, _Q, _R, _Q, _W, _Q, _W, _R, _W, _W, _E, _E, _R, _E, _E }
 
 -- [[ Spell details]]
 local Spells = {
@@ -104,11 +113,21 @@ end
 -- [[ Tick ]]
 OnTick(function()
 	KS()
+	AutoLevel()
 	target = GetCurrentTarget()
 			 Combo()
 			 Harass()
 			 Farm()
 		end)
+
+-- [[ AutoLevel ]]
+function AutoLevel()
+	if EzrealMenu.AutoLevel.DisableAUTOMAX:Value() then return end
+	if GetLevelPoints(myHero) > 0 then
+		DelayAction(function() LevelSpell(levelsc[GetLevel(myHero) + 1 - GetLevelPoints(myHero)]) end, 0.5)
+	end
+end
+
 -- [[ Ezreal Q ]]
 function EzrealQ()
 	local QPred = GetLinearAOEPrediction(target,Spells.Q)
