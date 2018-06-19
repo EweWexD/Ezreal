@@ -4,6 +4,9 @@
 --╚══╗║ ║║ ║║║║║║║╔══╝║║ ╔╗║╔══╝     ║╔══╝ ╔╝╔╝ ║╔╗╔╝║╔══╝║╚═╝║║║ ╔╗
 --║╚═╝║╔╣─╗║║║║║║║║   ║╚═╝║║╚══╗     ║╚══╗╔╝═╚═╗║║║╚╗║╚══╗║╔═╗║║╚═╝║
 --╚═══╝╚══╝╚╝╚╝╚╝╚╝   ╚═══╝╚═══╝     ╚═══╝╚════╝╚╝╚═╝╚═══╝╚╝ ╚╝╚═══╝
+-- V1.031 Changelog
+-- +Small bugs fixed.
+--
 -- V1.03 Changelog
 -- +Autolevel R>Q>W>E on/off added
 --
@@ -34,7 +37,7 @@ end
 EzrealScriptPrint("Made by EwEwe")
 
 -- [[ Update ]]
-local version = "1.03"
+local version = "1.031"
 function AutoUpdate(data)
 
     if tonumber(data) > tonumber(version) then
@@ -77,7 +80,7 @@ EzrealMenu.KS:Boolean("W", "Use W", true)
 EzrealMenu.KS:Boolean("R", "Use R", true)
 -- [[ AutoLevel ]]
 EzrealMenu:SubMenu("AutoLevel", "[Ezreal] AutoLevel")
-EzrealMenu.AutoLevel:Boolean("DisableAUTOMAX", "Auto max habilitis R>Q>W>E?", false)
+EzrealMenu.AutoLevel:Boolean("DisableAUTOMAX", "Auto max abilities R>Q>W>E?", false)
 -- [[Draw]]
 EzrealMenu:SubMenu("Draw", "[Ezreal] Drawing Settings")
 EzrealMenu.Draw:Boolean("Q", "Draw Q", false)
