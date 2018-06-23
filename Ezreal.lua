@@ -4,6 +4,10 @@
 --╚══╗║ ║║ ║║║║║║║╔══╝║║ ╔╗║╔══╝     ║╔══╝ ╔╝╔╝ ║╔╗╔╝║╔══╝║╚═╝║║║ ╔╗
 --║╚═╝║╔╣─╗║║║║║║║║   ║╚═╝║║╚══╗     ║╚══╗╔╝═╚═╗║║║╚╗║╚══╗║╔═╗║║╚═╝║
 --╚═══╝╚══╝╚╝╚╝╚╝╚╝   ╚═══╝╚═══╝     ╚═══╝╚════╝╚╝╚═╝╚═══╝╚╝ ╚╝╚═══╝
+-- V1.04 Changelog
+-- +GoSPred has been added to choose the predictions of Q, W and R.
+-- +Auto Q/W added.
+--
 -- V1.031 Changelog
 -- +Small bugs fixed.
 --
@@ -30,14 +34,15 @@ if GetObjectName( GetMyHero()) ~= "Ezreal" then return end
 -- [[ Lib ]]
 require ("OpenPredict")
 require ("DamageLib")
+
 function EzrealScriptPrint(msg)
 	print("<font color=\"#00ffff\">Ezreal Script:</font><font color=\"#ffffff\"> "..msg.."</font>")
 
 end
-EzrealScriptPrint("Made by EwEwe")
+EzrealScriptPrint("Made by EweEwe")
 
 -- [[ Update ]]
-local version = "1.031"
+local version = "1.04"
 function AutoUpdate(data)
 
     if tonumber(data) > tonumber(version) then
@@ -65,6 +70,11 @@ EzrealMenu:SubMenu("Harass", "[Ezreal] Harass Settings")
 EzrealMenu.Harass:Boolean("Q", "Use Q", true)
 EzrealMenu.Harass:Boolean("W", "Use W", true)
 EzrealMenu.Harass:Slider("Mana", "Min. Mana", 50, 0, 100, 1)
+-- [[ AutoAB ]]
+EzrealMenu:SubMenu("AutoAB", "[Ezreal] Auto Q & W")
+EzrealMenu.AutoAB:Boolean("Q", "Auto Q", true)
+EzrealMenu.AutoAB:Boolean("W", "Auto W", true)
+EzrealMenu.AutoAB:Slider("Mana", "Min. Mana", 50, 0, 100, 1)
 -- [[ LaneClear ]]
 EzrealMenu:SubMenu("Farm", "[Ezreal] Farm Settings")
 EzrealMenu.Farm:Boolean("Q", "Use Q", true)
@@ -81,6 +91,11 @@ EzrealMenu.KS:Boolean("R", "Use R", true)
 -- [[ AutoLevel ]]
 EzrealMenu:SubMenu("AutoLevel", "[Ezreal] AutoLevel")
 EzrealMenu.AutoLevel:Boolean("DisableAUTOMAX", "Auto max abilities R>Q>W>E?", false)
+-- [[ Prediction ]]
+EzrealMenu:SubMenu("Prediction", "[Ezreal] Prediction Settings")
+EzrealMenu.Prediction:DropDown("QPrediction","Prediction of Q", 2, {"OpenPredict", "GoSPrediction"})
+EzrealMenu.Prediction:DropDown("WPrediction","Prediction of W", 2, {"OpenPredict", "GoSPrediction"})
+EzrealMenu.Prediction:DropDown("RPrediction","Prediction of R", 2, {"OpenPredict", "GoSPrediction"})
 -- [[Draw]]
 EzrealMenu:SubMenu("Draw", "[Ezreal] Drawing Settings")
 EzrealMenu.Draw:Boolean("Q", "Draw Q", false)
@@ -93,7 +108,7 @@ local levelsc =  { _Q, _W, _E, _Q, _Q, _R, _Q, _W, _Q, _W, _R, _W, _W, _E, _E, _
 
 -- [[ Spell details]]
 local Spells = {
-	Q = {range = 1150, delay = 0.25 , speed= 2000 , width = 60},
+	Q = {range = 1150, delay = 0.25 , speed= 2000 , width = 60, collision = true, col = {"minion", "yasuowall"}},
 	W = {range = 1000, delay = 0.25 , speed= 1600 , width = 80},
 	E = {range = 475, delay = 0.25 , speed= 2000 , width = 80},
 	R = {range = 8000, delay = 1.0 , speed= 2000 , width = 160},
@@ -110,17 +125,20 @@ function Mode()
 		return DACR:Mode()
 	elseif _G.SLW_Loaded and SLW:Mode() then
 		return SLW:Mode()
+	elseif GoSWalkLoaded and GoSWalk.CurrentMode then
+		return ({"Combo", "Harass", "LaneClear", "LastHit"})[GoSWalk.CurrentMode+1]
 	end
 end
 
 -- [[ Tick ]]
 OnTick(function()
-	KS()
 	AutoLevel()
 	target = GetCurrentTarget()
+			 KS()
 			 Combo()
 			 Harass()
 			 Farm()
+			 AutoAB()
 		end)
 
 -- [[ AutoLevel ]]
@@ -133,16 +151,34 @@ end
 
 -- [[ Ezreal Q ]]
 function EzrealQ()
-	local QPred = GetLinearAOEPrediction(target,Spells.Q)
-	if QPred.hitChance > 0.9 then
-		CastSkillShot(_Q, QPred.castPos)
+	if GetDistance(target) < Spells.Q.range then
+		if EzrealMenu.Prediction.QPrediction:Value() == 1 then
+			local QPred = GetLinearAOEPrediction(target,Spells.Q)
+			if QPred.hitChance > 0.9 then
+				CastSkillShot(_Q, QPred.castPos)
+			end
+		elseif EzrealMenu.Prediction.QPrediction:Value() == 2 then
+			local QPred = GetPredictionForPlayer(GetOrigin(myHero),target,GetMoveSpeed(target),Spells.Q.speed, Spells.Q.delay*1000,Spells.Q.range,Spells.Q.width,true,false)
+			if QPred.HitChance == 1 then
+				CastSkillShot(_Q, QPred.PredPos)
+			end
+		end
 	end
 end
 -- [[ Ezreal W ]]
 function EzrealW()
-	local WPred = GetPrediction(target, Spells.W)
-	if WPred.hitChance > 0.3 then
-		CastSkillShot(_W, WPred.castPos)
+	if GetDistance(target) < Spells.W.range then
+		if EzrealMenu.Prediction.WPrediction:Value() == 1 then
+			local WPred = GetPrediction(target, Spells.W)
+			if WPred.hitChance > 0.3 then
+				CastSkillShot(_W, WPred.castPos)
+			end
+		elseif EzrealMenu.Prediction.WPrediction:Value() == 2 then
+			local WPred = GetPredictionForPlayer(GetOrigin(myHero),target,GetMoveSpeed(target),Spells.W.speed, Spells.W.delay*1000,Spells.W.range,Spells.W.width,false,true)
+			if WPred.HitChance == 1 then
+				CastSkillShot(_W, WPred.PredPos)
+			end	
+		end
 	end
 end
 -- [[ Ezreal E ]]
@@ -154,11 +190,19 @@ function EzrealE()
 end
 -- [[ Ezreal R ]]
 function EzrealR()
-	local RPred = GetPrediction(target, Spells.R)
-	if RPred.hitChance > 0.8 then
-		CastSkillShot(_R, RPred.castPos)
+	if EzrealMenu.Prediction.RPrediction:Value() == 1 then
+		local RPred = GetPrediction(target, Spells.R)
+		if RPred.hitChance > 0.8 then
+			CastSkillShot(_R, RPred.castPos)
+		end
+		elseif EzrealMenu.Prediction.RPrediction:Value() == 2 then
+			local RPred = GetPredictionForPlayer(GetOrigin(myHero),target,GetMoveSpeed(target),Spells.R.speed,Spells.R.delay*1000,Spells.R.range,Spells.R.width,false,true)
+			if RPred.HitChance == 1 then
+				CastSkillShot(_R, RPred.PredPos)
+			end
+		end
 	end
-end
+
 
 
 -- [[ Combo ]]
@@ -173,12 +217,15 @@ function Combo()
 			EzrealW()
 			end
 --		[[ Use E ]]   		
-		if EzrealMenu.Combo.E:Value() and Ready(_E) and ValidTarget(target, Spells.E.range) then
-			EzrealE()
+		if EzrealMenu.Combo.E:Value() then
+			if CanUseSpell(myHero,_E) == READY then
+				if ValidTarget(target, Spells.E.range+GetRange(myHero)) then
+					CastSkillShot(_E, GetMousePos())
+				end
+			end
 		end
 	end
 end
-
 -- [[ Harass ]]
 function Harass()
 	if Mode() == "Harass" then
@@ -190,6 +237,27 @@ function Harass()
 -- 			[[ Use W ]]
 			if EzrealMenu.Harass.W:Value() and Ready(_W) and ValidTarget(target, Spells.W.range) then
 				EzrealW()
+			end
+		end
+	end
+end
+-- [[ AutoAB ]]
+function AutoAB()
+	if EzrealMenu.AutoAB.Q:Value() then
+		if 100*GetCurrentMana(myHero)/GetMaxMana(myHero) > EzrealMenu.AutoAB.Mana:Value() then
+			if CanUseSpell(myHero,_Q) == READY then
+				if ValidTarget(target, Spells.Q.range) then
+					EzrealQ(target)
+				end
+			end
+		end
+	end
+	if EzrealMenu.AutoAB.W:Value() then
+		if 100*GetCurrentMana(myHero)/GetMaxMana(myHero) > EzrealMenu.AutoAB.Mana:Value() then
+			if CanUseSpell(myHero,_W) == READY then
+				if ValidTarget(target, Spells.W.range) then
+					EzrealW(target)
+				end
 			end
 		end
 	end
