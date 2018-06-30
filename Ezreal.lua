@@ -4,6 +4,9 @@
 --╚══╗║ ║║ ║║║║║║║╔══╝║║ ╔╗║╔══╝     ║╔══╝ ╔╝╔╝ ║╔╗╔╝║╔══╝║╚═╝║║║ ╔╗
 --║╚═╝║╔╣─╗║║║║║║║║   ║╚═╝║║╚══╗     ║╚══╗╔╝═╚═╗║║║╚╗║╚══╗║╔═╗║║╚═╝║
 --╚═══╝╚══╝╚╝╚╝╚╝╚╝   ╚═══╝╚═══╝     ╚═══╝╚════╝╚╝╚═╝╚═══╝╚╝ ╚╝╚═══╝
+-- V1.05 Changelog
+-- +Now some items are used (BOTRK, Hextech Gunblade and Bilfewater Cutlass) automatically in the tf.
+--
 -- V1.04 Changelog
 -- +GoSPred has been added to choose the predictions of Q, W and R.
 -- +Auto Q/W added.
@@ -42,13 +45,13 @@ end
 EzrealScriptPrint("Made by EweEwe")
 
 -- [[ Update ]]
-local version = "1.04"
+local version = "1.05"
 function AutoUpdate(data)
 
     if tonumber(data) > tonumber(version) then
         PrintChat("<font color='#00ffff'>New version found!"  .. data)
         PrintChat("<font color='#00ffff'>Downloading update, please wait...")
-        DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("Update Complete, please 2x F6!") return end)
+        DownloadFileAsync("https://raw.githubusercontent.com/EweWexD/Ezreal/master/Ezreal.lua", SCRIPT_PATH .. "Ezreal.lua", function() PrintChat("<font color='#00ffff'>Update Complete, please 2x F6!") return end)
     else
         PrintChat("<font color='#00ffff'>No updates found!")
     end
@@ -65,6 +68,7 @@ EzrealMenu:SubMenu("Combo", "[Ezreal] Combo Settings")
 EzrealMenu.Combo:Boolean("Q", "Use Q", true)
 EzrealMenu.Combo:Boolean("W", "Use W", true)
 EzrealMenu.Combo:Boolean("E", "Use E", false)
+
 -- [[ Harass ]]
 EzrealMenu:SubMenu("Harass", "[Ezreal] Harass Settings")
 EzrealMenu.Harass:Boolean("Q", "Use Q", true)
@@ -102,6 +106,11 @@ EzrealMenu.Draw:Boolean("Q", "Draw Q", false)
 EzrealMenu.Draw:Boolean("W", "Draw W", false)
 EzrealMenu.Draw:Boolean("E", "Draw E", false)
 EzrealMenu.Draw:Boolean("Disable", "Disable All Drawings", false)
+-- [[ Item Use ]]
+EzrealMenu:SubMenu("Items", "[Ezreal] Items Use")
+EzrealMenu.Items:Boolean("BOTRK", "Use BOTRK", true)
+EzrealMenu.Items:Boolean("HG", "Use Hextech Gunblade", true)
+EzrealMenu.Items:Boolean("BC", "Use Bilfewater Cutlass", true)
 
 -- [[ AutoLevel ]]
 local levelsc =  { _Q, _W, _E, _Q, _Q, _R, _Q, _W, _Q, _W, _R, _W, _W, _E, _E, _R, _E, _E }
@@ -139,6 +148,7 @@ OnTick(function()
 			 Harass()
 			 Farm()
 			 AutoAB()
+			 Items()
 		end)
 
 -- [[ AutoLevel ]]
@@ -221,6 +231,32 @@ function Combo()
 			if CanUseSpell(myHero,_E) == READY then
 				if ValidTarget(target, Spells.E.range+GetRange(myHero)) then
 					CastSkillShot(_E, GetMousePos())
+				end
+			end
+		end
+	end
+end
+-- [[ Items Use ]]
+function Items()
+	if Mode() == "Combo" then
+		if EzrealMenu.Items.BOTRK:Value() then
+			if GetItemSlot(myHero, 3153) >= 1 and ValidTarget(target, 550) then
+				if CanUseSpell(myHero, GetItemSlot(myHero, 3153)) then
+					CastTargetSpell(target, GetItemSlot(myHero, 3153))
+				end
+			end
+		end
+		if EzrealMenu.Items.HG:Value() then
+			if GetItemSlot(myHero, 3146) >= 1 and ValidTarget(target, 700) then
+				if CanUseSpell(myHero, GetItemSlot(myHero, 3146)) then
+					CastTargetSpell(target, GetItemSlot(myHero, 3146))
+				end
+			end
+		end
+		if EzrealMenu.Items.BC:Value() then
+			if GetItemSlot(myHero, 3144) >= 1 and ValidTarget(target, 550) then
+				if CanUseSpell(myHero, GetItemSlot(myHero, 3144)) then
+					CastTargetSpell(target, GetItemSlot(myHero, 3144))
 				end
 			end
 		end
