@@ -4,6 +4,11 @@
 --╚══╗║ ║║ ║║║║║║║╔══╝║║ ╔╗║╔══╝     ║╔══╝ ╔╝╔╝ ║╔╗╔╝║╔══╝║╚═╝║║║ ╔╗
 --║╚═╝║╔╣─╗║║║║║║║║   ║╚═╝║║╚══╗     ║╚══╗╔╝═╚═╗║║║╚╗║╚══╗║╔═╗║║╚═╝║
 --╚═══╝╚══╝╚╝╚╝╚╝╚╝   ╚═══╝╚═══╝     ╚═══╝╚════╝╚╝╚═╝╚═══╝╚╝ ╚╝╚═══╝
+-- V1.06 Changelog
+-- +Improved damage calculation.
+-- +The "KillsSteal Ready" chat message was replaced by a text in the enemy when it can be killed with the ulti.
+-- +Added a bar that shows the damage that will be done to the enemy.
+--
 -- V1.05 Changelog
 -- +Now some items are used (BOTRK, Hextech Gunblade and Bilfewater Cutlass) automatically in the tf.
 --
@@ -45,7 +50,7 @@ end
 EzrealScriptPrint("Made by EweEwe")
 
 -- [[ Update ]]
-local version = "1.05"
+local version = "1.06"
 function AutoUpdate(data)
 
     if tonumber(data) > tonumber(version) then
@@ -101,16 +106,28 @@ EzrealMenu.Prediction:DropDown("QPrediction","Prediction of Q", 2, {"OpenPredict
 EzrealMenu.Prediction:DropDown("WPrediction","Prediction of W", 2, {"OpenPredict", "GoSPrediction"})
 EzrealMenu.Prediction:DropDown("RPrediction","Prediction of R", 2, {"OpenPredict", "GoSPrediction"})
 -- [[Draw]]
-EzrealMenu:SubMenu("Draw", "[Ezreal] Drawing Settings")
+EzrealMenu:SubMenu("Draw", "[Ezreal] Range Draw Settings")
 EzrealMenu.Draw:Boolean("Q", "Draw Q", false)
 EzrealMenu.Draw:Boolean("W", "Draw W", false)
 EzrealMenu.Draw:Boolean("E", "Draw E", false)
+EzrealMenu.Draw:Boolean("R", "Draw R", false)
 EzrealMenu.Draw:Boolean("Disable", "Disable All Drawings", false)
+-- [[ DrawDMG ]]
+EzrealMenu:SubMenu("DrawDMG", "[Ezreal] DrawDMG")
+EzrealMenu.DrawDMG:Boolean("DrawD", "Draw Damage", true)
+EzrealMenu.DrawDMG:Boolean("Q", "Draw Q dmg", true)
+EzrealMenu.DrawDMG:Boolean("W", "Draw W dmg", true)
+EzrealMenu.DrawDMG:Boolean("R", "Draw R dmg", true)
 -- [[ Item Use ]]
 EzrealMenu:SubMenu("Items", "[Ezreal] Items Use")
 EzrealMenu.Items:Boolean("BOTRK", "Use BOTRK", true)
 EzrealMenu.Items:Boolean("HG", "Use Hextech Gunblade", true)
 EzrealMenu.Items:Boolean("BC", "Use Bilfewater Cutlass", true)
+-- [[ Create by me :3 ]]
+EzrealMenu:Info("Juan", "--------------")
+EzrealMenu:Info("Created", "Made by EweEwe")
+
+
 
 -- [[ AutoLevel ]]
 local levelsc =  { _Q, _W, _E, _Q, _Q, _R, _Q, _W, _Q, _W, _R, _W, _W, _E, _E, _R, _E, _E }
@@ -120,7 +137,7 @@ local Spells = {
 	Q = {range = 1150, delay = 0.25 , speed= 2000 , width = 60, collision = true, col = {"minion", "yasuowall"}},
 	W = {range = 1000, delay = 0.25 , speed= 1600 , width = 80},
 	E = {range = 475, delay = 0.25 , speed= 2000 , width = 80},
-	R = {range = 8000, delay = 1.0 , speed= 2000 , width = 160},
+	R = {range = 5000, delay = 1.0 , speed= 2000 , width = 160},
 }
 -- [[ Orbwalker ]]
 function Mode()
@@ -143,6 +160,7 @@ end
 OnTick(function()
 	AutoLevel()
 	target = GetCurrentTarget()
+			 dmgCalc()
 			 KS()
 			 Combo()
 			 Harass()
@@ -158,6 +176,39 @@ function AutoLevel()
 		DelayAction(function() LevelSpell(levelsc[GetLevel(myHero) + 1 - GetLevelPoints(myHero)]) end, 0.5)
 	end
 end
+
+-- [[ DMGCalc ]]
+function dmgCalc(spell)
+	local  dmg = {
+	["Q"] = 35 + 20*GetCastLevel(myHero,0) + GetBonusDmg(myHero)*1.1 + GetBonusAP(myHero)*0.4,
+	["W"] = 70 + 45*GetCastLevel(myHero,0) + GetBonusAP(myHero)*0.8,
+	["UR"] = 350 + 150*GetCastLevel(myHero,0) + GetBonusDmg(myHero)*1 + GetBonusAP(myHero)*0.9,
+	} 
+	return dmg[spell]
+end
+
+-- [[ DrawDamage ]]
+OnDraw(function(myHero)
+	for _, unit in pairs(GetEnemyHeroes()) do
+		if ValidTarget(unit, 2000) and EzrealMenu.DrawDMG.DrawD:Value() then
+			local DmgDraw=0
+			if Ready(_Q) and EzrealMenu.DrawDMG.Q:Value() then 
+				DmgDraw = dmgCalc("Q")
+			end
+			if Ready(_W) and EzrealMenu.DrawDMG.W:Value() then 
+				DmgDraw = dmgCalc("W")
+			end
+			if Ready(_R) and EzrealMenu.DrawDMG.R:Value() then 
+				DmgDraw = dmgCalc("UR")
+			end
+			DmgDraw = CalcDamage(myHero, unit, 0, DmgDraw)
+			if DmgDraw > GetCurrentHP(unit) then 
+				DmgDraw = GetCurrentHP(unit)
+			end
+			DrawDmgOverHpBar(unit,GetCurrentHP(unit),0,DmgDraw,0xFFC2C244)
+		end
+	end
+end)
 
 -- [[ Ezreal Q ]]
 function EzrealQ()
@@ -334,8 +385,8 @@ function KS()
 --		[[ Use R ]]
 		if EzrealMenu.KS.R:Value() and Ready(_R) and ValidTarget(enemy, Spells.R.range) then
 			if GetCurrentHP(enemy) < getdmg("R", enemy, myHero) then
+				DrawText("Killable!",30,enemy.pos2D.x-30,enemy.pos2D.y-40,0xFFFF0000)
 				EzrealR()
-				EzrealScriptPrint("KillSteals Ready")
 				end
 			end
 		end
@@ -351,4 +402,6 @@ OnDraw(function(myHero)
 	if EzrealMenu.Draw.W:Value() then DrawCircle(pos, Spells.W.range, 1, 25, 0xFFFFFF00) end
 --	[[ Draw Q]]
 	if EzrealMenu.Draw.E:Value() then DrawCircle(pos, Spells.E.range, 0, 25, 0xFF56B107) end
+--	[[ Draw R ]]
+	if EzrealMenu.Draw.R:Value() then DrawCircle(pos, Spells.R.range, 0, 25, 0xFF56B107) end
 end)
